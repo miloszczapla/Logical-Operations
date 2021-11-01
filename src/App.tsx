@@ -113,9 +113,11 @@ function OperationBuilder({
   args: Args;
   obligatoryField?: boolean;
 }): JSX.Element {
-  const [extraOperations, setExtraOperations] = useState<Operation[]>([]);
+  const [extraOperations, setExtraOperations] = useState<number[]>([]);
   const [fieldType, setFieldType] = useState<Operation | 'select'>('select');
-  const [operationArgs, setOperationArgs] = useState<Args>({});
+  const [operationArgs, setOperationArgs] = useState<Args>({
+    [operationId]: false,
+  });
 
   const selectField = (
     <>
@@ -134,14 +136,15 @@ function OperationBuilder({
         <option value='or'>or</option>
       </select>
       {obligatoryField && (
-        <button onClick={() => setFieldType('select')}>X</button>
+        <button className='w-22 h-22' onClick={() => setFieldType('select')}>
+          X
+        </button>
       )}
     </>
   );
   const constantField = (
     <>
       <select
-        defaultValue={operationArgs[operationId].toString()}
         onChange={(e) => {
           setOperationArgs((prevArgs) => ({
             ...prevArgs,
@@ -153,7 +156,9 @@ function OperationBuilder({
         <option value='false'>false</option>
       </select>
       {obligatoryField && (
-        <button onClick={() => setFieldType('select')}>X</button>
+        <button className='w-22 h-22' onClick={() => setFieldType('select')}>
+          X
+        </button>
       )}
     </>
   );
@@ -179,7 +184,9 @@ function OperationBuilder({
         ))}
       </select>
       {obligatoryField && (
-        <button onClick={() => setFieldType('select')}>X</button>
+        <button className='w-22 h-22' onClick={() => setFieldType('select')}>
+          X
+        </button>
       )}
     </>
   );
@@ -190,10 +197,6 @@ function OperationBuilder({
     switch (fieldType) {
       case 'set':
         setField(constantField);
-        setOperationArgs((prevArgs) => ({
-          ...prevArgs,
-          [operationId]: false,
-        }));
         break;
       case 'args':
         setField(argumentField);
@@ -222,19 +225,20 @@ function OperationBuilder({
                 onChange={setOperationArgs}
                 operationId={1}
               />
-              {extraOperations.map((_, id, __) => (
-                <div className='flex-row' key={id}>
+              {extraOperations.map((operationNum) => (
+                <div className='flex-row' key={operationNum}>
                   <OperationBuilder
                     args={args}
                     operation={fieldType}
                     onChange={setOperationArgs}
-                    operationId={id + 2}
+                    operationId={operationNum}
                   />
                   <button
+                    className='w-22 h-22'
                     onClick={() => {
-                      deleteOperation(id);
+                      deleteOperation(operationNum);
                       setOperationArgs((prevArgs) => {
-                        delete prevArgs[id];
+                        delete prevArgs[operationNum];
                         return prevArgs;
                       });
                     }}
@@ -266,12 +270,17 @@ function OperationBuilder({
 
   function addOperation() {
     setExtraOperations((prevOperations) => {
-      return [...prevOperations, operation];
+      console.log('extraOperations', prevOperations);
+
+      return [...prevOperations, prevOperations[prevOperations.length - 1] + 1];
     });
   }
 
   function deleteOperation(id: number) {
     setExtraOperations((prevOperations) => {
+      console.log('extra operation', id);
+      console.log('operatons', prevOperations);
+
       prevOperations.splice(id, 1);
       return [...prevOperations];
     });
